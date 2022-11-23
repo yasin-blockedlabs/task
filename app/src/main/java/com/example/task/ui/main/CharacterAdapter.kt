@@ -8,28 +8,36 @@ import com.example.task.R
 import com.example.task.databinding.ViewGotCharacterBinding
 import com.example.task.repository.database.entity.GotCharacter
 
-class CharacterAdapter(val action: Action): RecyclerView.Adapter<CharacterAdapter.CharacterViewHolder>() {
+class CharacterAdapter(): RecyclerView.Adapter<CharacterAdapter.CharacterViewHolder>() {
+
+    var gotCharacterList: List<GotCharacter> = listOf()
+
+    fun updateGotCharacterList(gotCharacterList: List<GotCharacter>?){
+        gotCharacterList?.let {
+            println("Adapter Data Updated: ${it.size}")
+            this.gotCharacterList = gotCharacterList
+            notifyDataSetChanged()
+        }
+
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CharacterViewHolder
-        = CharacterViewHolder(DataBindingUtil.inflate<ViewGotCharacterBinding>(
+        = CharacterViewHolder(DataBindingUtil.inflate(
             LayoutInflater.from(parent.context),
         R.layout.view_got_character, parent, false
         ))
 
     override fun onBindViewHolder(holder: CharacterViewHolder, position: Int) {
-        holder.update(action.getGotCharacters()?.get(position))
+        holder.update(gotCharacterList?.get(position))
     }
 
-    override fun getItemCount(): Int = action.getGotCharacters()?.size ?: 0
+    override fun getItemCount(): Int = gotCharacterList?.size ?: 0
 
     inner class CharacterViewHolder(val binding: ViewGotCharacterBinding):
         RecyclerView.ViewHolder(binding.root){
         fun update(gotCharacter: GotCharacter?){
             binding.character = gotCharacter
+            binding.executePendingBindings()
         }
-    }
-
-    interface Action{
-        fun getGotCharacters(): List<GotCharacter>?
     }
 }

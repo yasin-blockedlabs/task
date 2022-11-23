@@ -23,11 +23,16 @@ class MainRepository @Inject constructor(
             emit(DataState.Loading)
             val gotCharacterList = remote.getGotCharacters()
             database.updateGotCharacters(gotCharacterList)
+            val gotCharactersDb = database.getAllGotCharacters()
+            emit(DataState.Success(gotCharactersDb))
+            println("Emited API")
         } catch (e: Exception) {
             emit(DataState.Error)
+            val gotCharactersDb = database.getAllGotCharacters()
+            emit(DataState.Success(gotCharactersDb))
+            println("Emited Database")
         }
-        val gotCharactersDb = database.getAllGotCharacters()
-        emit(DataState.Success(gotCharactersDb))
+
     }
 
     fun loadGotCharacters(): Flow<DataState<List<GotCharacter>>> = flow {

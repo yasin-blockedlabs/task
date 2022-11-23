@@ -9,16 +9,15 @@ import com.example.task.ui.base.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), CharacterAdapter.Action {
+class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
     private var loadedFromDb = false
     private var loaded = false
-    private var adapter: CharacterAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        adapter = CharacterAdapter(this)
-        binding.recyclerView.adapter = adapter!!
+        binding.adapter = CharacterAdapter()
+        binding.viewModel = viewModel
     }
 
     override fun configureBinding(): ActivityMainBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -26,6 +25,10 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), Charact
     override fun configureViewModel(): MainViewModel = viewModels<MainViewModel>().value
 
     override fun subscribeEvents() {
+
+        viewModel.gotCharacterList.observe(this){
+            println("Got Characters: ${it.size}")
+        }
 
         connectionLiveData.observe(this){
             if (!loaded) {
@@ -43,12 +46,11 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), Charact
                 is DataState.Loading -> binding.textView.text = "Loading!"
                 is DataState.Error -> binding.textView.text = "Error!"
                 is DataState.Success -> {
-                    loaded = !it.data.isEmpty() && !loadedFromDb
+                    loaded = it.data.isNotEmpty() && !loadedFromDb
                     if (it.data.isEmpty())
                         binding.textView.text = if (loadedFromDb) "Check your network!" else "No Data!"
                     else {
                         binding.textView.text = ""
-                        adapter?.notifyDataSetChanged()
                     }
                 }
             }
@@ -56,5 +58,4 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), Charact
 
     }
 
-    override fun getGotCharacters(): List<GotCharacter>? = viewModel.gotCharacterList.value
 }
